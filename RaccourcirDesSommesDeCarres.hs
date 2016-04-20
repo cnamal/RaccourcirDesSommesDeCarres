@@ -1,12 +1,28 @@
+{- Etant donné une somme de la forme 1²+2² +...+n², on se
+ - demande si on on peut atteindre la même valeur avec une
+ - somme de carrés de nombres positifs distincs non nuls
+ - contenant un nombre m strictement inférieur à n de termes.
+ - En appelant longueurInitiale le nombre n et longueurFinale
+ - le nombre m, la fonction raccourcir qui suit renvoie
+ - toutes les suites strictement croissantes qui conviennent. -}
+raccourcir longueurInitiale longueurFinale =
+  arbreDeSommeDesCarresDonnee 0 borne (longueurFinale + 1) somme
+    where
+      sommeCarre debut fin = sum $ map (^2) [debut..fin]
+      somme = sommeCarre 1 longueurInitiale
+      borne = floor . sqrt . fromIntegral $
+		sommeCarre longueurFinale longueurInitiale
+	-- Au pire, les m-1 premiers nombres vont de 1 à m-1.
+
 {- La représentation des listes croissantes d'entiers en jeux
  - sous la forme d'une structure de donnée arborescente permet
  - de faire l'économie de toute répétition de calculs.
  - L'implémentation exaxcte permet de simplifier ces calculs. -}
 data Arbre = ArbreVide | Arbre Int [Arbre] deriving (Eq)
 
-{- Afin que chaque solution soit représentée sur une
- - ligne distincte. On fait du type Arbre une instance
- - de la classe Show de la façon suivante.             -}
+{- Afin que chaque solution soit représentée de façon lisible
+ - (chaque solution sur une ligne distincte), on fait du type
+ - Arbre une instance de la classe Show de la façon suivante. -}
 instance Show Arbre where
   show = montrerLesListes . toutesLesListes where
     toutesLesListes  :: Arbre -> [[Int]]
@@ -45,35 +61,4 @@ arbreDeSommeDesCarresDonnee debut borne longueur sommeDesCarres
 	arbreParfait :: Arbre -> Bool         -- Teste la
 	arbreParfait  ArbreVide       = False -- présence
 	arbreParfait (Arbre _ arbres) =       -- de sous-arbres
-	  (and . map arbreParfait) arbres     -- non-conformes.
-
-{- Etant donné une somme de la forme 1²+2² -}
-raccourcir longueurInitiale longueurFinale =
-  arbreDeSommeDesCarresDonnee 0 borne (longueurFinale + 1) somme
-    where
-      sommeCarre debut fin = sum $ map (^2) [debut..fin]
-      somme = sommeCarre 1 longueurInitiale
-      borne = floor . sqrt . fromIntegral $
-		sommeCarre longueurFinale longueurInitiale
-
-sommeCarre :: [Int] -> Int
-sommeCarre xs = sum $ map (^2) xs
-
-maxMoins2 longueur = sommeCarre [1..longueur-2]
-diffmax   longueur = sommeCarre [longueur-1,longueur]
-maxou     longueur = maxMoins2 longueur + diffmax longueur
-
-listesDentiers longueur = melangeCroissant $
-  take (longueur - 1) $
-  repeat [1..(floor . sqrt . fromIntegral $ diffmax longueur :: Int)]
-
-melangeCroissant []     = [[]]
-melangeCroissant [xs]   = [[x] | x <- xs]
-melangeCroissant (l:ls) = [(x:xs) | x <- l, xs <- melangeCroissant ls,x < head xs]
-
-listesDeSommeMaxou longueur = [xs | xs <- listesDentiers longueur, sommeCarre xs == maxou longueur]
-
-arbreCroissant debut _   1        = Arbre debut []
-arbreCroissant debut fin longueur =
-  Arbre debut 
-        [arbreCroissant debut' fin (longueur - 1) | debut' <- [debut + 1 .. fin + 2 - longueur]]
+	  (and . map arbreParfait) arbres     -- non-conformes !
